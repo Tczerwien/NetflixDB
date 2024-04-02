@@ -54,6 +54,21 @@ def insert_row(tableName, attributeList, attributeValues):
     NetflixDB.commit()
     return print("check")
 
+def show_table(tableName):
+    sql = f"SELECT * FROM {tableName}"
+    controller.execute(sql)
+
+    column_names = [col[0] for col in controller.description]
+    max_col_width = 20
+    print("  ".join([name.ljust(max_col_width) for name in column_names]))
+    print("-" * (len(column_names) * (max_col_width + 2) - 1))
+
+
+    for row in controller:
+        formatted_row = [str(val).ljust(max_col_width)[:max_col_width] for val in row]
+        print("  ".join(formatted_row))
+
+
 
 
 
@@ -123,7 +138,8 @@ if action == 1:
 elif action == 2:
     print('\nYou chose Read.')
     print_tables()
-    print("Which ")
+    choice = input("Which Table Would you like to see?(type the exact name)")
+    show_table(choice)
 
 elif action == 3:
     print('\nYou chose to Update.')
