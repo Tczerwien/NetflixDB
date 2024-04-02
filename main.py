@@ -68,6 +68,17 @@ def show_table(tableName):
         formatted_row = [str(val).ljust(max_col_width)[:max_col_width] for val in row]
         print("  ".join(formatted_row))
 
+def update_row(tableName, updateData, whereClause):
+    setClause = ", ".join([f"{key} = %s" for key in updateData.keys()])
+    sql = f"UPDATE {tableName} SET {setClause} WHERE {whereClause}"
+
+    values = list(updateData.values()) + [whereClause]
+
+    controller.execute(sql, values)
+    NetflixDB.commit()
+
+
+
 
 
 
@@ -144,6 +155,39 @@ elif action == 2:
 elif action == 3:
     print('\nYou chose to Update.')
     print_tables()
+    choice = input('Which table would you like to Update?(type the exact name)')
+    show_table(choice)
+    row = input('Which row would you like to update?(select the ID)')
+    match choice:
+        case "movie":
+            where = "MID = "+row
+        case "people":
+            where = "PID = "+row
+        case "characters":
+            where = "CID = "+row
+        case "genre":
+            where = "GID = "+row
+        case "rating":
+            where = "RID = "+row
+        case "series":
+            where = "SID = "+row
+    update = input("What would you like to update?(type the exact attribute(s), comma seperated)")
+    update = update.split(",")
+    update = [item.strip() for item in update]
+    update = set(update)
+    userIn = []
+    for element in update:
+        newIn = input(f"What would you like the new {element} to be:")
+        userIn.append(newIn)
+
+    newInput = dict(zip(update, userIn))
+
+    update_row(choice, newInput, where)
+
+
+
+
+
 
 
 
