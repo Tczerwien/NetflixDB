@@ -203,6 +203,24 @@ elif action == 4:
         print('Deleted Successfully!')
 
     elif create_action == 2:
+        print_tables()
+        choice = input('Which table would you like to delete from?(type the exact name)')
+        show_table(choice)
+        row = input('Which row would you like to delete?(select the ID)')
+        match choice:
+            case "movie":
+                where = "MID = " + row
+            case "people":
+                where = "PID = " + row
+            case "characters":
+                where = "CID = " + row
+            case "genre":
+                where = "GID = " + row
+            case "rating":
+                where = "RID = " + row
+            case "series":
+                where = "SID = " + row
+        delete_row(choice, where)
 
 
 
