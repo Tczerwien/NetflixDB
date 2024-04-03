@@ -72,11 +72,16 @@ def update_row(tableName, updateData, whereClause):
     setClause = ", ".join([f"{key} = %s" for key in updateData.keys()])
     sql = f"UPDATE {tableName} SET {setClause} WHERE {whereClause}"
 
-    values = list(updateData.values()) + [whereClause]
+    values = list(updateData.values())
 
     controller.execute(sql, values)
     NetflixDB.commit()
 
+def delete_row(tableName, whereClause):
+    sql = f"DELETE FROM {tableName} WHERE {whereClause}"
+
+    controller.execute(sql)
+    NetflixDB.commit()
 
 
 
@@ -110,7 +115,7 @@ if action == 1:
     create_action = choose(1, 2)
 
     if create_action == 1:
-        print('\nType the SQL syntax (Must be perfect!!)')
+        print('\nTo create a new table,\nType the SQL syntax (Must be perfect!!)')
         command = input()
         controller.execute(command)
         print('Done!')
@@ -184,16 +189,28 @@ elif action == 3:
 
     update_row(choice, newInput, where)
 
-
-
-
-
-
-
-
 elif action == 4:
     print('\nYou chose to Delete')
-    print_tables()
+    print('1)Delete a table\n2)Delete an entry in a table')
+    create_action = choose(1, 2)
+
+    if create_action == 1:
+        print_tables()
+        table = input('Which table would you like to delete: (type exact name)')
+        sql = f"DROP TABLE {table}"
+        controller.execute(sql)
+        NetflixDB.commit()
+        print('Deleted Successfully!')
+
+    elif create_action == 2:
+
+
+
+
+
+
+
+
 
 
 
