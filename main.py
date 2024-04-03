@@ -22,12 +22,22 @@ for i, x in enumerate(controller):
 
 
 def print_tables():
-     SQLCommand = 'SELECT DISTINCT object_name FROM sys.schema_tables_with_full_table_scans'
-     controller.execute(SQLCommand)
-     tables = controller.fetchall()
-     tables = tabulate(tables, headers=["Table Names\n"])
-     print(tables)
-     print('-------------')
+    SQLCommand = """
+    SELECT table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = 'Netflix_DB' 
+    AND table_type = 'BASE TABLE' 
+    AND table_name NOT LIKE '%\_view%'
+    AND table_name NOT LIKE '%\_pivot%'
+    """
+    controller.execute(SQLCommand)
+    tables = controller.fetchall()
+
+    formatted_tables = [list(table) for table in tables]
+
+    tables_str = tabulate(formatted_tables, headers=["Table Names"], tablefmt="plain")
+    print(tables_str)
+    print('--------')
 
 
 def choose(c1, c2):
@@ -45,6 +55,22 @@ def choose(c1, c2):
         except ValueError:
             print("Invalid input. Please enter a valid number.")
     return choice
+
+
+def create_table(tableName, attributeANDValues):
+    columns = []
+    for attr, dataType in attributeANDValues.items():
+        columns.append(f"{attr} {dataType}")
+
+    columnList = ", ".join(columns)
+
+    sql = f"""CREATE TABLE {tableName} ({columnList})"""
+    controller.execute(sql)
+    NetflixDB.commit()
+    controller.execute(f"SELECT * FROM {tableName}")
+    print('done')
+
+
 
 def insert_row(tableName, attributeList, attributeValues):
     values = attributeValues.split(',')
@@ -96,117 +122,82 @@ def delete_row(tableName, whereClause):
 
 
 
+while True:
+    print('Welcome to the Netflix Database!' + '\n----------------------------------------------')
+    print('\nOPTIONS:\n1)Create \n2)Read \n3)Update \n4)Delete \n5)Quit\n')
+    action = choose(1, 5)
+    if action == 5:
+        print('Exiting Netflix Database')
+        break
 
+    if action == 1:
+        print('\nYou chose to create!')
+        print('1)Create new table\n2)Create new entry in existing table')
+        create_action = choose(1, 2)
 
+        if create_action == 1:
+            print('\nTo create a new table, answer the following...')
+            tableName = input("What will be your new tables name:")
 
+            attributes = input("What would you like your attributes to be?(comma seperated)")
+            attributes = attributes.split(",")
+            attributes = [item.strip() for item in attributes]
+            attributes = set(attributes)
+            types = []
+            for element in attributes:
+                newIn = input(f"What data type should {element} be:")
+                types.append(newIn)
 
+            attributes_types = dict(zip(attributes, types))
 
+            create_table(tableName, attributes_types)
 
+        elif create_action == 2:
+            print('\nWhich table would you like to add too?')
+            print_tables()
+            choice = input("type the table name(exactly):")
 
+            match choice:
+                case "movie":
+                    attributes = ['MID', 'MName', 'MReleaseDate', 'MRuntime']
+                    userInput = input(
+                        "Enter your movie's MID, MName, MReleaseDate, and MRuntime in a comma seperated list: ")
+                    insert_row('movie', attributes, userInput)
+                case "people":
+                    attributes = ['people', 'PID', 'PName', 'DOB', 'IsActor', 'IsDirector', 'IsWriter']
+                    userInput = input(
+                        "Enter your person's PID, PName, DOB, IsActor, IsDirector, and IsWriter in a comma seperated list: ")
+                    insert_row('people', attributes, userInput)
+                case "characters":
+                    attributes = ['CID', 'CName']
+                    userInput = input("Enter your character's CID and CName in a comma seperated list: ")
+                    insert_row('characters', attributes, userInput)
+                case "genre":
+                    attributes = ['GID', 'GName']
+                    userInput = input("Enter your genre's GID and GName in a comma seperated list: ")
+                    insert_row('genre', attributes, userInput)
+                case "rating":
+                    attributes = ['RID', 'Rating', 'Votes']
+                    userInput = input("Enter you rating's RID, Rating, and Votes in a comma seperated list: ")
+                    insert_row('rating', attributes, userInput)
+                case "series":
+                    attributes = ['SID', 'SName', 'SReleaseDate', 'SEnd']
+                    userInput = input(
+                        "Enter your series' SID, Sname, SReleaseYear, and SEndYear in a comma seperated list")
+                    insert_row('series', attributes, userInput)
 
-
-print('Welcome to the Netflix Database!' + '\n----------------------------------------------')
-print('\nOPTIONS:\n1)Create \n2)Read \n3)Update \n4)Delete\n')
-action = choose(1, 4)
-
-if action == 1:
-    print('\nYou chose to create!')
-    print('1)Create new table\n2)Create new entry in existing table')
-    create_action = choose(1, 2)
-
-    if create_action == 1:
-        print('\nTo create a new table,\nType the SQL syntax (Must be perfect!!)')
-        command = input()
-        controller.execute(command)
-        print('Done!')
-
-    elif create_action == 2:
-        print('\nWhich table would you like to add too?')
+    elif action == 2:
+        print('\nYou chose Read.')
         print_tables()
-        choice = input("type the table name(exactly):")
-
-        match choice:
-            case "movie":
-                attributes = ['MID', 'MName', 'MReleaseDate', 'MRuntime']
-                userInput = input("Enter your movie's MID, MName, MReleaseDate, and MRuntime in a comma seperated list: ")
-                insert_row('movie', attributes, userInput)
-            case "people":
-                attributes = ['people', 'PID', 'PName', 'DOB', 'IsActor', 'IsDirector', 'IsWriter']
-                userInput = input("Enter your person's PID, PName, DOB, IsActor, IsDirector, and IsWriter in a comma seperated list: ")
-                insert_row('people', attributes, userInput)
-            case "characters":
-                attributes = ['CID', 'CName']
-                userInput = input("Enter your character's CID and CName in a comma seperated list: ")
-                insert_row('characters', attributes, userInput)
-            case "genre":
-                attributes = ['GID', 'GName']
-                userInput = input("Enter your genre's GID and GName in a comma seperated list: ")
-                insert_row('genre', attributes, userInput)
-            case "rating":
-                attributes = ['RID', 'Rating', 'Votes']
-                userInput = input("Enter you rating's RID, Rating, and Votes in a comma seperated list: ")
-                insert_row('rating', attributes, userInput)
-            case "series":
-                attributes = ['SID', 'SName', 'SReleaseDate', 'SEnd']
-                userInput = input("Enter your series' SID, Sname, SReleaseYear, and SEndYear in a comma seperated list")
-                insert_row('series', attributes, userInput)
-
-elif action == 2:
-    print('\nYou chose Read.')
-    print_tables()
-    choice = input("Which Table Would you like to see?(type the exact name)")
-    show_table(choice)
-
-elif action == 3:
-    print('\nYou chose to Update.')
-    print_tables()
-    choice = input('Which table would you like to Update?(type the exact name)')
-    show_table(choice)
-    row = input('Which row would you like to update?(select the ID)')
-    match choice:
-        case "movie":
-            where = "MID = "+row
-        case "people":
-            where = "PID = "+row
-        case "characters":
-            where = "CID = "+row
-        case "genre":
-            where = "GID = "+row
-        case "rating":
-            where = "RID = "+row
-        case "series":
-            where = "SID = "+row
-    update = input("What would you like to update?(type the exact attribute(s), comma seperated)")
-    update = update.split(",")
-    update = [item.strip() for item in update]
-    update = set(update)
-    userIn = []
-    for element in update:
-        newIn = input(f"What would you like the new {element} to be:")
-        userIn.append(newIn)
-
-    newInput = dict(zip(update, userIn))
-
-    update_row(choice, newInput, where)
-
-elif action == 4:
-    print('\nYou chose to Delete')
-    print('1)Delete a table\n2)Delete an entry in a table')
-    create_action = choose(1, 2)
-
-    if create_action == 1:
-        print_tables()
-        table = input('Which table would you like to delete: (type exact name)')
-        sql = f"DROP TABLE {table}"
-        controller.execute(sql)
-        NetflixDB.commit()
-        print('Deleted Successfully!')
-
-    elif create_action == 2:
-        print_tables()
-        choice = input('Which table would you like to delete from?(type the exact name)')
+        choice = input("Which Table Would you like to see?(type the exact name)")
         show_table(choice)
-        row = input('Which row would you like to delete?(select the ID)')
+
+    elif action == 3:
+        print('\nYou chose to Update.')
+        print_tables()
+        choice = input('Which table would you like to Update?(type the exact name)')
+        show_table(choice)
+        row = input('Which row would you like to update?(select the ID)')
         match choice:
             case "movie":
                 where = "MID = " + row
@@ -220,7 +211,61 @@ elif action == 4:
                 where = "RID = " + row
             case "series":
                 where = "SID = " + row
-        delete_row(choice, where)
+        update = input("What would you like to update?(type the exact attribute(s), comma seperated)")
+        update = update.split(",")
+        update = [item.strip() for item in update]
+        update = set(update)
+        userIn = []
+        for element in update:
+            newIn = input(f"What would you like the new {element} to be:")
+            userIn.append(newIn)
+
+        newInput = dict(zip(update, userIn))
+
+        update_row(choice, newInput, where)
+
+    elif action == 4:
+        print('\nYou chose to Delete')
+        print('1)Delete a table\n2)Delete an entry in a table')
+        create_action = choose(1, 2)
+
+        if create_action == 1:
+            print_tables()
+            table = input('Which table would you like to delete: (type exact name)')
+            sql = f"DROP TABLE {table}"
+            controller.execute(sql)
+            NetflixDB.commit()
+            print('Deleted Successfully!')
+
+        elif create_action == 2:
+            print_tables()
+            choice = input('Which table would you like to delete from?(type the exact name)')
+            show_table(choice)
+            row = input('Which row would you like to delete?(select the ID)')
+            match choice:
+                case "movie":
+                    where = "MID = " + row
+                case "people":
+                    where = "PID = " + row
+                case "characters":
+                    where = "CID = " + row
+                case "genre":
+                    where = "GID = " + row
+                case "rating":
+                    where = "RID = " + row
+                case "series":
+                    where = "SID = " + row
+            delete_row(choice, where)
+
+
+
+
+
+
+
+
+
+
 
 
 
