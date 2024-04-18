@@ -1,5 +1,40 @@
 import mysql.connector
 from tabulate import *
+import tkinter
+import customtkinter
+
+
+
+
+# System settings
+customtkinter.set_appearance_mode("System")
+#customtkinter.set_default_color_theme("red")
+
+# app frame
+app = customtkinter.CTk()
+app.geometry("720x480")
+app.title("Netflix DB")
+
+# Adding elements
+
+# Title
+welcome_text =
+
+
+#Run App
+app.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
 
 NetflixDB = mysql.connector.connect(
     host='localhost',
@@ -121,9 +156,9 @@ def delete_row(tableName, whereClause):
 
 
 
+print('Welcome to the Netflix Database!' + '\n----------------------------------------------')
 
 while True:
-    print('Welcome to the Netflix Database!' + '\n----------------------------------------------')
     print('\nOPTIONS:\n1)Create \n2)Read \n3)Update \n4)Delete \n5)Quit\n')
     action = choose(1, 5)
     if action == 5:
@@ -259,6 +294,17 @@ while True:
 
 
 
+
+
+
+
+
+
+
+
+controller.close()
+NetflixDB.close()
+print('Thanks for using, your session has now ended!')
 
 
 
