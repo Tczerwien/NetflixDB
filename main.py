@@ -1,4 +1,5 @@
 import mysql.connector
+from customtkinter import CTkLabel
 from tabulate import *
 import tkinter
 import customtkinter
@@ -18,8 +19,9 @@ app.title("Netflix DB")
 # Adding elements
 
 # Title
-welcome_text =
-
+welcome_text = "Welcome to the Netflix Database"
+welcome_label = CTkLabel(master=app, text=welcome_text, font=("Arial", 28), text_color='red')
+welcome_label.pack(padx=10, pady=10)
 
 #Run App
 app.mainloop()
